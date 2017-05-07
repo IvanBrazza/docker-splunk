@@ -130,8 +130,7 @@ EOF
             exit 1
           fi
           echo "Waiting for ${SPLUNK_MASTER_URI} to be available..."
-          while ! nc -q 1 ${SPLUNK_MASTER_URI/:/ } </dev/null; do sleep 10; done
-          sudo -HEu ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk edit cluster-config -mode slave -master_uri https://${SPLUNK_MASTER_URI} -replication_port ${SPLUNK_REPLICATION_PORT} -secret ${SPLUNK_SECRET} -auth admin:changeme"
+          while ! sudo -HEu ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk edit cluster-config -mode slave -master_uri https://${SPLUNK_MASTER_URI} -replication_port ${SPLUNK_REPLICATION_PORT} -secret ${SPLUNK_SECRET} -auth admin:changeme"; do sleep 10; done
           ;;
         search_head_cluster_deployer)
           # Validate required vars
