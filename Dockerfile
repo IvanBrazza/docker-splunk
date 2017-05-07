@@ -1,5 +1,7 @@
 FROM splunk/splunk
 
+RUN apt update && apt install netcat
+
 COPY entrypoint.sh /sbin/entrypoint.sh
 RUN chmod +x /sbin/entrypoint.sh
 
