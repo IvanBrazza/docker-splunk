@@ -1,5 +1,7 @@
 FROM splunk/splunk
 
+ENV SPLUNK_ACCEPT_LICENSE false
+
 COPY entrypoint.sh /sbin/entrypoint.sh
 RUN chmod +x /sbin/entrypoint.sh
 

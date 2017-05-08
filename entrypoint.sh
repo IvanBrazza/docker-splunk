@@ -36,6 +36,11 @@ elif [ "$1" = 'start-service' ]; then
     __license_ok=true
   fi
 
+  if [[ "$SPLUNK_ACCEPT_LICENSE" == "true" ]]; then
+    $SPLUNK_START_ARGS="$SPLUNK_START_ARGS --accept-license"
+    __license_ok=true
+  fi
+
   if [[ $__license_ok == "false" ]]; then
     cat << EOF
 Splunk Enterprise
