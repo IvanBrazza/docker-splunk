@@ -117,9 +117,9 @@ EOF
             exit 1
           fi
           if [[ -n ${SPLUNK_CLUSTER_LABEL} ]]; then
-            SPLUNK_CLUSTER_LABEL="-cluster_label ${SPLUNK_CLUSTER_LABEL}"
+            SPLUNK_CLUSTER_LABEL="-cluster_label '${SPLUNK_CLUSTER_LABEL}'"
           fi
-          sudo -HEu ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk edit cluster-config -mode master -replication_factor ${SPLUNK_REPLICATION_FACTOR} -search_factor ${SPLUNK_SEARCH_FACTOR} -secret ${SPLUNK_SECRET} ${SPLUNK_CLUSTER_LABEL} -auth admin:changeme"
+          sudo -HEu ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk edit cluster-config -mode master -replication_factor ${SPLUNK_REPLICATION_FACTOR} -search_factor ${SPLUNK_SEARCH_FACTOR} -secret '${SPLUNK_SECRET}' ${SPLUNK_CLUSTER_LABEL} -auth admin:changeme"
           ;;
         indexer_cluster_peer)
           # Validate required vars
@@ -136,7 +136,7 @@ EOF
             exit 1
           fi
           echo "Waiting for ${SPLUNK_MASTER_URI} to be available..."
-          while ! sudo -HEu ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk edit cluster-config -mode slave -master_uri https://${SPLUNK_MASTER_URI} -replication_port ${SPLUNK_REPLICATION_PORT} -secret ${SPLUNK_SECRET} -auth admin:changeme"; do sleep 10; done
+          while ! sudo -HEu ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk edit cluster-config -mode slave -master_uri https://${SPLUNK_MASTER_URI} -replication_port ${SPLUNK_REPLICATION_PORT} -secret '${SPLUNK_SECRET}' -auth admin:changeme"; do sleep 10; done
           ;;
         search_head_cluster_deployer)
           # Validate required vars
@@ -176,11 +176,11 @@ EOL
             exit 1
           fi
           if [[ -n ${SPLUNK_CLUSTER_LABEL} ]]; then
-            SPLUNK_CLUSTER_LABEL="-shcluster_label ${SPLUNK_CLUSTER_LABEL}"
+            SPLUNK_CLUSTER_LABEL="-shcluster_label '${SPLUNK_CLUSTER_LABEL}'"
           fi
-          sudo -HEu ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk init shcluster-config -auth admin:changeme -mgmt_uri https://${SPLUNK_MGMT_URI} -replication_port ${SPLUNK_REPLICATION_PORT} -replication_factor ${SPLUNK_REPLICATION_FACTOR} -conf_deploy_fetch_url https://${SPLUNK_DEPLOYER_URL} -secret ${SPLUNK_SECRET} ${SPLUNK_CLUSTER_LABEL}  -auth admin:changeme"
+          sudo -HEu ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk init shcluster-config -auth admin:changeme -mgmt_uri https://${SPLUNK_MGMT_URI} -replication_port ${SPLUNK_REPLICATION_PORT} -replication_factor ${SPLUNK_REPLICATION_FACTOR} -conf_deploy_fetch_url https://${SPLUNK_DEPLOYER_URL} -secret '${SPLUNK_SECRET}' ${SPLUNK_CLUSTER_LABEL}  -auth admin:changeme"
           if [[ -n ${SPLUNK_MASTER_URI} ]]; then
-            sudo -HEu ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk edit cluster-config -mode searchhead -master_uri https://${SPLUNK_MASTER_URI} -secret ${SPLUNK_SECRET} -auth admin:changeme"
+            sudo -HEu ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk edit cluster-config -mode searchhead -master_uri https://${SPLUNK_MASTER_URI} -secret '${SPLUNK_SECRET}' -auth admin:changeme"
           fi
           ;;
       esac
