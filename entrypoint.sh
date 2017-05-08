@@ -37,7 +37,7 @@ elif [ "$1" = 'start-service' ]; then
   fi
 
   if [[ "$SPLUNK_ACCEPT_LICENSE" == "true" ]]; then
-    $SPLUNK_START_ARGS="$SPLUNK_START_ARGS --accept-license"
+    SPLUNK_START_ARGS="$SPLUNK_START_ARGS --accept-license"
     __license_ok=true
   fi
 
