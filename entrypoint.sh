@@ -39,6 +39,8 @@ elif [ "$1" = 'start-service' ]; then
   if [[ "$SPLUNK_ACCEPT_LICENSE" == "true" ]]; then
     SPLUNK_START_ARGS="$SPLUNK_START_ARGS --accept-license"
     __license_ok=true
+  else
+    __license_ok=false
   fi
 
   if [[ $__license_ok == "false" ]]; then
@@ -56,8 +58,8 @@ Splunk Enterprise
 
   Usage:
 
-    docker run -it splunk/enterprise:6.4.1
-    docker run --env SPLUNK_START_ARGS="--accept-license" splunk/enterprise:6.4.1
+    docker run -it ivanbrazza/splunk
+    docker run --env SPLUNK_START_ARGS="--accept-license" ivanbrazza/splunk
 
 EOF
     exit 1
@@ -103,35 +105,34 @@ EOF
         master_node)
           # Validate required vars
           if [[ -z ${SPLUNK_REPLICATION_FACTOR} ]]; then
-            cat "SPLUNK_REPLICATION_FACTOR not set!"
+            echo "SPLUNK_REPLICATION_FACTOR not set!"
             exit 1
           fi
           if [[ -z ${SPLUNK_SEARCH_FACTOR} ]]; then
-            cat "SPLUNK_SEARCH_FACTOR not set!"
+            echo "SPLUNK_SEARCH_FACTOR not set!"
             exit 1
           fi
           if [[ -z ${SPLUNK_SECRET} ]]; then
-            cat "SPLUNK_SECRET not set!"
+            echo "SPLUNK_SECRET not set!"
             exit 1
           fi
-          if [[ -z ${SPLUNK_CLUSTER_LABEL} ]]; then
-            cat "SPLUNK_CLUSTER_LABEL not set!"
-            exit 1
+          if [[ -n ${SPLUNK_CLUSTER_LABEL} ]]; then
+            SPLUNK_CLUSTER_LABEL="-cluster_label ${SPLUNK_CLUSTER_LABEL}"
           fi
-          sudo -HEu ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk edit cluster-config -mode master -replication_factor ${SPLUNK_REPLICATION_FACTOR} -search_factor ${SPLUNK_SEARCH_FACTOR} -secret ${SPLUNK_SECRET} -cluster_label ${SPLUNK_CLUSTER_LABEL} -auth admin:changeme"
+          sudo -HEu ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk edit cluster-config -mode master -replication_factor ${SPLUNK_REPLICATION_FACTOR} -search_factor ${SPLUNK_SEARCH_FACTOR} -secret ${SPLUNK_SECRET} ${SPLUNK_CLUSTER_LABEL} -auth admin:changeme"
           ;;
         indexer_cluster_peer)
           # Validate required vars
           if [[ -z ${SPLUNK_MASTER_URI} ]]; then
-            cat "SPLUNK_MASTER_URI not set!"
+            echo "SPLUNK_MASTER_URI not set!"
             exit 1
           fi
           if [[ -z ${SPLUNK_REPLICATION_PORT} ]]; then
-            cat "SPLUNK_REPLICATION_PORT not set!"
+            echo "SPLUNK_REPLICATION_PORT not set!"
             exit 1
           fi
           if [[ -z ${SPLUNK_SECRET} ]]; then
-            cat "SPLUNK_SECRET not set!"
+            echo "SPLUNK_SECRET not set!"
             exit 1
           fi
           echo "Waiting for ${SPLUNK_MASTER_URI} to be available..."
@@ -140,46 +141,44 @@ EOF
         search_head_cluster_deployer)
           # Validate required vars
           if [[ -z ${SPLUNK_SECRET} ]]; then
-            cat "SPLUNK_SECRET not set!"
+            echo "SPLUNK_SECRET not set!"
             exit 1
           fi
-          if [[ -z ${SPLUNK_CLUSTER_LABEL} ]]; then
-            cat "SPLUNK_CLUSTER_LABEL not set!"
-            exit 1
+          if [[ -n ${SPLUNK_CLUSTER_LABEL} ]]; then
+            SPLUNK_CLUSTER_LABEL="shcluster_label = ${SPLUNK_CLUSTER_LABEL}"
           fi
           cat >> ${SPLUNK_HOME}/etc/system/local/server.conf <<EOL
 [shclustering]
 pass4SymmKey = ${SPLUNK_SECRET}
-shcluster_label = ${SPLUNK_CLUSTER_LABEL}
+${SPLUNK_CLUSTER_LABEL}
 EOL
           ;;
         search_head_cluster_peer)
           # Validate required vars
           if [[ -z ${SPLUNK_MGMT_URI} ]]; then
-            cat "SPLUNK_MGMT_URI not set!"
+            echo "SPLUNK_MGMT_URI not set!"
             exit 1
           fi
           if [[ -z ${SPLUNK_REPLICATION_PORT} ]]; then
-            cat "SPLUNK_REPLICATION_PORT not set!"
+            echo "SPLUNK_REPLICATION_PORT not set!"
             exit 1
           fi
           if [[ -z ${SPLUNK_REPLICATION_FACTOR} ]]; then
-            cat "SPLUNK_REPLICATION_FACTOR not set!"
+            echo "SPLUNK_REPLICATION_FACTOR not set!"
             exit 1
           fi
           if [[ -z ${SPLUNK_DEPLOYER_URL} ]]; then
-            cat "SPLUNK_DEPLOYER_URL not set!"
+            echo "SPLUNK_DEPLOYER_URL not set!"
             exit 1
           fi
           if [[ -z ${SPLUNK_SECRET} ]]; then
-            cat "SPLUNK_SECRET not set!"
+            echo "SPLUNK_SECRET not set!"
             exit 1
           fi
-          if [[ -z ${SPLUNK_CLUSTER_LABEL} ]]; then
-            cat "SPLUNK_CLUSTER_LABEL not set!"
-            exit 1
+          if [[ -n ${SPLUNK_CLUSTER_LABEL} ]]; then
+            SPLUNK_CLUSTER_LABEL="-shcluster_label ${SPLUNK_CLUSTER_LABEL}"
           fi
-          sudo -HEu ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk init shcluster-config -auth admin:changeme -mgmt_uri https://${SPLUNK_MGMT_URI} -replication_port ${SPLUNK_REPLICATION_PORT} -replication_factor ${SPLUNK_REPLICATION_FACTOR} -conf_deploy_fetch_url https://${SPLUNK_DEPLOYER_URL} -secret ${SPLUNK_SECRET} -shcluster_label ${SPLUNK_CLUSTER_LABEL}  -auth admin:changeme"
+          sudo -HEu ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk init shcluster-config -auth admin:changeme -mgmt_uri https://${SPLUNK_MGMT_URI} -replication_port ${SPLUNK_REPLICATION_PORT} -replication_factor ${SPLUNK_REPLICATION_FACTOR} -conf_deploy_fetch_url https://${SPLUNK_DEPLOYER_URL} -secret ${SPLUNK_SECRET} ${SPLUNK_CLUSTER_LABEL}  -auth admin:changeme"
           if [[ -n ${SPLUNK_MASTER_URI} ]]; then
             sudo -HEu ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk edit cluster-config -mode searchhead -master_uri https://${SPLUNK_MASTER_URI} -secret ${SPLUNK_SECRET} -auth admin:changeme"
           fi
@@ -196,7 +195,7 @@ EOL
       if [[ ${SPLUNK_BOOTSTRAP_CAPTAIN} -eq "true" ]]; then
         # Validate required vars
         if [[ -z ${SPLUNK_SHCLUSTER_SERVER_LIST} ]]; then
-          cat "SPLUNK_SHCLUSTER_SERVER_LIST not set!"
+          echo "SPLUNK_SHCLUSTER_SERVER_LIST not set!"
           exit 1
         fi
         sudo -HEu ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk bootstrap shcluster-captain -servers_list ${SPLUNK_SHCLUSTER_SERVER_LIST} -auth admin:changeme"
