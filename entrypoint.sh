@@ -198,6 +198,19 @@ EOL
           echo "SPLUNK_SHCLUSTER_SERVER_LIST not set!"
           exit 1
         fi
+
+        re="rancher:(.+):(.+)"
+        if [[ $SPLUNK_SHCLUSTER_SERVER_LIST =~ $re ]]; then
+          RANCHER_STACK=${BASH_REMATCH[1]}
+          RANCHER_NODES=${BASH_REMATCH[2]}
+          echo "Building cluster server list from Rancher stack ${RANCHER_STACK} ${RANCHER_NODES}"
+          $SPLUNK_SHCLUSTER_SERVER_LIST=""
+          for i in $(seq 1 ${RANCHER_NODES}); do
+            SPLUNK_SHCLUSTER_SERVER_LIST="${SPLUNK_SHCLUSTER_SERVER_LIST}https://${RANCHER_STACK}-shc-node-$i:8089,"
+          done
+          SPLUNK_SHCLUSTER_SERVER_LIST="${SPLUNK_SHCLUSTER_SERVER_LIST}https://shc-captain:8089"
+        fi
+
         sudo -HEu ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk bootstrap shcluster-captain -servers_list ${SPLUNK_SHCLUSTER_SERVER_LIST} -auth admin:changeme"
       fi
     fi
