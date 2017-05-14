@@ -178,7 +178,15 @@ EOL
           if [[ -n ${SPLUNK_CLUSTER_LABEL} ]]; then
             SPLUNK_CLUSTER_LABEL="-shcluster_label '${SPLUNK_CLUSTER_LABEL}'"
           fi
+
           sudo -HEu ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk init shcluster-config -auth admin:changeme -mgmt_uri https://${SPLUNK_MGMT_URI} -replication_port ${SPLUNK_REPLICATION_PORT} -replication_factor ${SPLUNK_REPLICATION_FACTOR} -conf_deploy_fetch_url https://${SPLUNK_DEPLOYER_URL} -secret '${SPLUNK_SECRET}' ${SPLUNK_CLUSTER_LABEL}  -auth admin:changeme"
+
+          re="^(.+)\/(.+)$"
+          if [[ ${SPLUNK_MASTER_SERVICE} =~ $re ]]; then
+            SPLUNK_MASTER_URI="${BASH_REMATCH[2]}.${BASH_REMATCH[1]}:8089"
+            echo "Got ${SPLUNK_MASTER_SERVICE} as a master service, using ${SPLUNK_MASTER_URI} as master URI"
+          fi
+
           if [[ -n ${SPLUNK_MASTER_URI} ]]; then
             sudo -HEu ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk edit cluster-config -mode searchhead -master_uri https://${SPLUNK_MASTER_URI} -secret '${SPLUNK_SECRET}' -auth admin:changeme"
           fi
