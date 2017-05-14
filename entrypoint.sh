@@ -156,8 +156,8 @@ EOL
         search_head_cluster_peer)
           # Validate required vars
           if [[ -z ${SPLUNK_MGMT_URI} ]]; then
-            echo "SPLUNK_MGMT_URI not set!"
-            exit 1
+            echo "SPLUNK_MGMT_URI not set! Using current hostname"
+            SPLUNK_MGMT_URI = "https://$(hostname):8089"
           fi
           if [[ -z ${SPLUNK_REPLICATION_PORT} ]]; then
             echo "SPLUNK_REPLICATION_PORT not set!"
