@@ -188,7 +188,8 @@ EOL
           fi
 
           if [[ -n ${SPLUNK_MASTER_URI} ]]; then
-            sudo -HEu ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk edit cluster-config -mode searchhead -master_uri https://${SPLUNK_MASTER_URI} -secret '${SPLUNK_SECRET}' -auth admin:changeme"
+            echo "Waiting for ${SPLUNK_MASTER_URI} to be available..."
+            while ! sudo -HEu ${SPLUNK_USER} sh -c "${SPLUNK_HOME}/bin/splunk edit cluster-config -mode searchhead -master_uri https://${SPLUNK_MASTER_URI} -secret '${SPLUNK_SECRET}' -auth admin:changeme"; do sleep 10; done
           fi
           ;;
       esac
